@@ -24,7 +24,7 @@ class TestPersonalAccount:
         driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
         WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[contains(text(),"Профиль")]')))
         
-        assert driver.current_url == urls.url_account
+        assert (urls.url_part_account in driver.current_url)
 
 
     def test_transition_to_pa_by_clicking_pa__logged_out (self):
@@ -34,7 +34,7 @@ class TestPersonalAccount:
         driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
         WebDriverWait(driver, 3)
 
-        assert (driver.current_url == urls.url_login_form) 
+        assert (urls.url_part_login_form in driver.current_url) 
 
         driver.quit()
         
@@ -50,7 +50,7 @@ class TestPersonalAccount:
 
         driver.find_element(By.XPATH, '//p[contains(text(), "Конструктор")]//..//..//a').click()
 
-        assert driver.current_url == urls.url_constructor
+        assert driver.current_url == urls.url_main_page+urls.url_part_constructor
 
 
 
@@ -79,7 +79,7 @@ class TestPersonalAccount:
         driver.find_element(By.XPATH, '//button[contains(text(), "Выход")]').click()
         WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//button[contains(text(),"Войти")]')))
         
-        assert driver.current_url == urls.url_login_form
+        assert (urls.url_part_login_form in driver.current_url)
 
 
 

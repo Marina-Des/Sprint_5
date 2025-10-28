@@ -1,8 +1,9 @@
 import constants.urls as urls
 import pytest
 import time
-from datetime import datetime
 import re
+import random
+import string
 
 
 from selenium import webdriver
@@ -14,14 +15,15 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 class TestRegistrationChrome:
 
+# тут должны упасть 2 теста - на пустом вводе пароля и на вводе адреса эл.почты с доменом первого уровня в виде числа
+
 # Во всех тестах предполагаю, что в случае успешной регистрации приложение переводит на страницу .../login
 
 
 
 # генерация адреса эл.почты с использованием текущей даты и времени для меня гарантирует, что я не столкнусь с ситуацией, что "такой пользователь уже зарегистрирован" 
-    def generate_email(self):
-        base=datetime.now()
-        return 'usver'+str(base.year)[2:4]+str(base.month)+str(base.day)+'_'+str(base.hour)+str(base.minute)+str(base.second)+str(base.microsecond)[0:2]+'@abvgd.edu'
+    def generate_correct_email(self):
+        return 'usver'+ str(int(random.random()*10000))+'@abvgd.edu'
 
 
     # этот код повторяется во всех тестах, но я не смогла загнать его в фикстуру, а потом применить. Надо больше времени и гугла
@@ -40,11 +42,11 @@ class TestRegistrationChrome:
     # Проверь успешную регистрацию. 
     def test_reg_successful_with_right_name_email_password(self):
         driver=webdriver.Chrome()
-        driver.get(urls.url_registration_page)
-        self.fill_name_email_password_click_register(driver, 'correct_name', self.generate_email(), '123456789')
+        driver.get(urls.url_main_page+urls.url_part_registration_page)
+        self.fill_name_email_password_click_register(driver, 'correct_name', self.generate_correct_email(), '123456789')
         time.sleep(3) # запас на медленный переход. Приложение тормозит
 
-        assert driver.current_url == urls.url_login_form
+        assert (urls.url_part_login_form in driver.current_url)
 
         driver.quit()
 
@@ -65,13 +67,13 @@ class TestRegistrationChrome:
         ['1234567890', True]])
     def test_password_six_simbols(self, password, is_correct_password):
         driver=webdriver.Chrome()
-        driver.get(urls.url_registration_page)
+        driver.get(urls.url_main_page+urls.url_part_registration_page)
 
-        self.fill_name_email_password_click_register(driver, 'correct_name', self.generate_email(), password)
+        self.fill_name_email_password_click_register(driver, 'correct_name', self.generate_correct_email(), password)
         time.sleep(3) # запас на медленный переход. Приложение тормозит
 
         is_incorrect_password_message=bool(driver.find_elements(By.XPATH, '//*[contains(text(),"Некорректный пароль")]'))
-        is_forward_to_login_url=(driver.current_url==urls.url_login_form)
+        is_forward_to_login_url=(urls.url_part_login_form in driver.current_url)
 
         assert (is_incorrect_password_message!=is_correct_password) and (is_forward_to_login_url==is_correct_password)
 
@@ -88,29 +90,39 @@ class TestRegistrationChrome:
     ])
     def test_name_not_empty(self, name, is_correct):
         driver=webdriver.Chrome()
-        driver.get(urls.url_registration_page)
+        driver.get(urls.url_main_page+urls.url_part_registration_page)
 
-        self.fill_name_email_password_click_register(driver, name, self.generate_email(), 'correct_pwd')
+        self.fill_name_email_password_click_register(driver, name, self.generate_correct_email(), 'correct_pwd')
         time.sleep(3) # запас на медленный переход
 
         # судя по логике приложения, если все данные верны, то идет переход на страницу входа (.../login). Если нет, то никакое сообщение не показывается (хотя за это руки оторвать! и к плечам приделать!), просто ничего не происходит. В том числе перехода. А значит, url остается .../register
-        assert ('/register' in driver.current_url) != is_correct
+        assert (urls.url_part_registration_page in driver.current_url) != is_correct
 
         driver.quit()
 
 
     # Проверь: в поле Email введён email в формате логин@домен
 
-    # С этим тестом вышла проблемка. При первом прогоне приложение приняло эл.почту в неправильном формате и зарегистрировала с ней пользователей. Дальше надо чистить БД, но у меня такой возможности нет. Но тесты рабочие.
+    # Генерация некорректного адреса эл.почты состоит из 4х частей: имя, количество @, домен 2 уровня и "хвост" - домен 1го уровня и . , если есть. Любая часть может состоять из указываемого количества символов от 0 до лимитов языка. В данном случае я пометила, какие шаблоны генерируются и проверяются, "*" - любая строчная латинская буква. Дальше можно написать вставку спецсимволов и букв других алфавитов при необходимости. 
      
-    @pytest.mark.parametrize ('email', ['asd', '@.', 'a@b.11'])
-    def test_email_wrong_domain_format(self, email):
+    @pytest.mark.parametrize ('name,at,domain2,tail', [
+        [0, 0, 0, ''],   # пустая строка
+        [4, 0, 0, ''],   # ****
+        [4, 0, 0, '.org'],   # ****.org
+        [0, 1, 4, ''],   # @****
+        [0, 1, 4, '.org'],   # @****.org
+        [5, 1, 4,'.11'],   # *****@****.11
+        [5, 1, 4, '.']   # *****@****.
+        ])
+    def test_email_wrong_domain_format(self, name, at, domain2, tail):
         driver=webdriver.Chrome()
-        driver.get(urls.url_registration_page)
-        self.fill_name_email_password_click_register(driver, 'correct_name', email, 'correct_pwd')
+        driver.get(urls.url_main_page+urls.url_part_registration_page)        
+        inc_email=''.join([random.choice(string.ascii_lowercase) for _ in range(name)])+'@'*at+''.join([random.choice(string.ascii_lowercase) for _ in range(domain2)])+tail
+
+        self.fill_name_email_password_click_register(driver, 'correct_name', inc_email, 'correct_pwd')
         time.sleep(3) # запас на медленный переход. Приложение тормозит
 
-        assert ('/register' in driver.current_url) == True
+        assert (urls.url_part_registration_page in driver.current_url) == True
 
         driver.quit()
 

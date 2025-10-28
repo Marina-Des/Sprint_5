@@ -16,13 +16,17 @@ class TestConstructor:
 
     # Проверь, что работает переход к разделу "Булки"
     # Так как булки по умолчанию и так сверху, то сначала прокрутим окно вниз, чтобы потом перейти к булкам и проверить факт движения.
+
+    # Твой комментарий: "Нужно исправить: на начало теста мы уже находимся на этом табе, чтобы проверить переключение, нужно сначала перейти на другой"
+    # Так я так и делаю: я пролистываю скролл вниз до самого конца, сответственно, раздел "Булки" уезжает вверх, а в названиях разделов выделение перемещается на последний, т.е. "Начинки".  Если я сделаю сначала переход, например, на те же начинки, а он не сработает (ведь работа у перехода по разделам у всех разделов одинаковая), то и этот переход не сможем проверить. Я старалась сделать что-то совершенно независимое от тестируемых методов. Но для проверки добавила еще одно условие: что до нажатия на "Булки" и после координаты не равны. 
     def test_transition_to_bulki (self):
         driver=webdriver.Chrome()
-        driver.get(urls.url_constructor)
+        driver.get(urls.url_main_page+urls.url_part_constructor)
         WebDriverWait(driver, 3)
         scroll_frame = driver.find_element(By.XPATH, '//div[contains(@class, "BurgerIngredients_ingredients__menuContainer")]')
         head_bulki = driver.find_element(By.XPATH, '//h2[contains(text(), "Булки")]')
         driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", scroll_frame)
+        top_bulki_start = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, head_bulki)
         time.sleep(2)
         WebDriverWait(driver, 3)
         driver.find_element(By.XPATH, '//span[contains(text(), "Булки")]').click()
@@ -31,7 +35,7 @@ class TestConstructor:
         top_scroll = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, scroll_frame)
         top_bulki_new = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, head_bulki)
 
-        assert (top_scroll-top_bulki_new) <=100
+        assert ((top_scroll-top_bulki_new) <=100) and (top_bulki_start != top_bulki_new)
 
         driver.quit()
 
@@ -41,7 +45,7 @@ class TestConstructor:
     # Проверь, что работает переход к разделу "Соусы"
     def test_transition_to_sousy (self):
         driver=webdriver.Chrome()
-        driver.get(urls.url_constructor)
+        driver.get(urls.url_main_page+urls.url_part_constructor)
         WebDriverWait(driver, 5)
         scroll_frame = driver.find_element(By.XPATH, '//div[contains(@class, "BurgerIngredients_ingredients__menuContainer")]')
         head_sousy = driver.find_element(By.XPATH, '//h2[contains(text(), "Соусы")]')
@@ -61,7 +65,7 @@ class TestConstructor:
     # Проверь, что работает переход к разделу "Начинки"
     def test_transition_to_nachinki (self):
         driver=webdriver.Chrome()
-        driver.get(urls.url_constructor)
+        driver.get(urls.url_main_page+urls.url_part_constructor)
 
         scroll_frame = driver.find_element(By.XPATH, '//div[contains(@class, "BurgerIngredients_ingredients__menuContainer")]')
         head_nachinki = driver.find_element(By.XPATH, '//h2[contains(text(), "Начинки")]')
