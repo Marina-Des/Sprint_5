@@ -1,6 +1,6 @@
 import constants.urls as urls
+import constants.locators as locs
 import pytest
-import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,75 +10,64 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 class TestConstructor:
 
-# В этом классе тесты основаны на том, насколько близко после нажатия кнопок перехода к разделу находятся верх окна с разделами и скроллом и верх заголовка соответствующего раздела. По-хорошему, надо смотреть дизайн, я допустила разницу по высоте в 100px. 
-
-
+    class_tab_header_selected = 'tab_tab_type_current'
 
     # Проверь, что работает переход к разделу "Булки"
-    # Так как булки по умолчанию и так сверху, то сначала прокрутим окно вниз, чтобы потом перейти к булкам и проверить факт движения.
 
-    # Твой комментарий: "Нужно исправить: на начало теста мы уже находимся на этом табе, чтобы проверить переключение, нужно сначала перейти на другой"
-    # Так я так и делаю: я пролистываю скролл вниз до самого конца, сответственно, раздел "Булки" уезжает вверх, а в названиях разделов выделение перемещается на последний, т.е. "Начинки".  Если я сделаю сначала переход, например, на те же начинки, а он не сработает (ведь работа у перехода по разделам у всех разделов одинаковая), то и этот переход не сможем проверить. Я старалась сделать что-то совершенно независимое от тестируемых методов. Но для проверки добавила еще одно условие: что до нажатия на "Булки" и после координаты не равны. 
-    def test_transition_to_bulki (self):
-        driver=webdriver.Chrome()
+
+    def test_transition_to_bulki (self, driver_creation_quit):
+        driver=driver_creation_quit
         driver.get(urls.url_main_page+urls.url_part_constructor)
-        WebDriverWait(driver, 3)
-        scroll_frame = driver.find_element(By.XPATH, '//div[contains(@class, "BurgerIngredients_ingredients__menuContainer")]')
-        head_bulki = driver.find_element(By.XPATH, '//h2[contains(text(), "Булки")]')
-        driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", scroll_frame)
-        top_bulki_start = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, head_bulki)
-        time.sleep(2)
-        WebDriverWait(driver, 3)
-        driver.find_element(By.XPATH, '//span[contains(text(), "Булки")]').click()
-        time.sleep(2)
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located(locs.constr_nachinki_tab_header))
 
-        top_scroll = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, scroll_frame)
-        top_bulki_new = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, head_bulki)
+        driver.find_element(*locs.constr_nachinki_tab_header).click()
+        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable(locs.constr_bulki_tab_header))
 
-        assert ((top_scroll-top_bulki_new) <=100) and (top_bulki_start != top_bulki_new)
+        status_before = (self.class_tab_header_selected in driver.find_element(*locs.constr_bulki_tab_header_div).get_attribute('class'))
+        # must be False
 
-        driver.quit()
+        driver.find_element(*locs.constr_bulki_tab_header).click()
+        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable(locs.constr_nachinki_tab_header))
+
+        status_after = (self.class_tab_header_selected in driver.find_element(*locs.constr_bulki_tab_header_div).get_attribute('class'))
+
+
+        assert (not status_before) and (status_after)
 
 
 
 
     # Проверь, что работает переход к разделу "Соусы"
-    def test_transition_to_sousy (self):
-        driver=webdriver.Chrome()
+    def test_transition_to_sousy (self, driver_creation_quit):
+        driver=driver_creation_quit
         driver.get(urls.url_main_page+urls.url_part_constructor)
-        WebDriverWait(driver, 5)
-        scroll_frame = driver.find_element(By.XPATH, '//div[contains(@class, "BurgerIngredients_ingredients__menuContainer")]')
-        head_sousy = driver.find_element(By.XPATH, '//h2[contains(text(), "Соусы")]')
-        
-        driver.find_element(By.XPATH, '//span[contains(text(), "Соусы")]').click()
-        time.sleep(2)
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located(locs.constr_sousy_tab_header))
 
-        top_scroll = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, scroll_frame)
-        top_sousy_new = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, head_sousy)
+        status_before = (self.class_tab_header_selected in driver.find_element(*locs.constr_sousy_tab_header_div).get_attribute('class'))
+        # must be False
 
-        assert (top_scroll-top_sousy_new) <=100
+        driver.find_element(*locs.constr_sousy_tab_header).click()
+        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable(locs.constr_bulki_tab_header))
+        status_after = (self.class_tab_header_selected in driver.find_element(*locs.constr_sousy_tab_header_div).get_attribute('class'))
+    
+        assert (not status_before) and (status_after)
 
-        driver.quit()
 
 
 
     # Проверь, что работает переход к разделу "Начинки"
-    def test_transition_to_nachinki (self):
-        driver=webdriver.Chrome()
+    def test_transition_to_nachinki (self, driver_creation_quit):
+        driver=driver_creation_quit
         driver.get(urls.url_main_page+urls.url_part_constructor)
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located(locs.constr_nachinki_tab_header))
+        status_before = (self.class_tab_header_selected in driver.find_element(*locs.constr_nachinki_tab_header_div).get_attribute('class'))
+        # must be False
 
-        scroll_frame = driver.find_element(By.XPATH, '//div[contains(@class, "BurgerIngredients_ingredients__menuContainer")]')
-        head_nachinki = driver.find_element(By.XPATH, '//h2[contains(text(), "Начинки")]')
+        driver.find_element(*locs.constr_nachinki_tab_header).click()
+        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable(locs.constr_nachinki_tab_header))
+        status_after = (self.class_tab_header_selected in driver.find_element(*locs.constr_nachinki_tab_header_div).get_attribute('class'))
 
-        driver.find_element(By.XPATH, '//span[contains(text(), "Начинки")]').click()
-        time.sleep(2)
-
-        top_scroll = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, scroll_frame)
-        top_nachinki_new = driver.execute_script("""const rect = arguments[0].getBoundingClientRect(); return rect.top; """, head_nachinki)
-
-        assert (top_scroll-top_nachinki_new) <=100
-
-        driver.quit()
+        assert (not status_before) and (status_after)
 
 
 

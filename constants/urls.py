@@ -1,6 +1,5 @@
 url_main_page = 'https://stellarburgers.education-services.ru/'
 
-#url_main_page = 'https://stellarburgers.nomorepartiessite.ru/'
 
 url_part_account= 'account/profile'
 url_part_constructor= ''

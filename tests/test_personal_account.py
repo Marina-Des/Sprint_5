@@ -1,9 +1,8 @@
 #import conftest
 import constants.urls as urls
 import constants.credentials as creds
+import constants.locators as locs
 import pytest
-import time
-
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,8 +20,8 @@ class TestPersonalAccount:
 
     def test_transition_to_pa_by_clicking_pa_logged_in (self, driver_creation_login_quit):
         driver = driver_creation_login_quit
-        driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
-        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[contains(text(),"Профиль")]')))
+        driver.find_element(*locs.main_personal_account_link).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located(locs.pa_profile_lettering))
         
         assert (urls.url_part_account in driver.current_url)
 
@@ -31,8 +30,8 @@ class TestPersonalAccount:
         driver=webdriver.Chrome()
         driver.get(urls.url_main_page)
         WebDriverWait(driver, 3)
-        driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
-        WebDriverWait(driver, 3)
+        driver.find_element(*locs.main_personal_account_link).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located(locs.login_login_lettering))
 
         assert (urls.url_part_login_form in driver.current_url) 
 
@@ -44,12 +43,12 @@ class TestPersonalAccount:
 
     def test_transition_to_constructor_from_pa_by_click_on_button (self, driver_creation_login_quit):
         driver=driver_creation_login_quit
-        driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
+        driver.find_element(*locs.main_personal_account_link).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located((locs.pa_constructor_link))) 
 
-        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//p[contains(text(), "Конструктор")]//..//..//a'))) 
-
-        driver.find_element(By.XPATH, '//p[contains(text(), "Конструктор")]//..//..//a').click()
-
+        driver.find_element(*locs.pa_constructor_link).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located((locs.main_assemble_a_burger_lettering))) 
+        
         assert driver.current_url == urls.url_main_page+urls.url_part_constructor
 
 
@@ -58,12 +57,11 @@ class TestPersonalAccount:
 
     def test_transition_by_click_on_logo_from_pa (self, driver_creation_login_quit):
         driver=driver_creation_login_quit
-        driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
+        driver.find_element(*locs.main_personal_account_link).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located((locs.pa_logo_link)))
 
-        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//div[starts-with(@class, "AppHeader_header__logo")]//a')))
-
-        driver.find_element(By.XPATH, '//div[starts-with(@class, "AppHeader_header__logo")]//a').click()
-        WebDriverWait(driver, 3)
+        driver.find_element(*locs.pa_logo_link).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located(locs.main_assemble_a_burger_lettering))
         
         assert driver.current_url == urls.url_main_page
 
@@ -73,11 +71,11 @@ class TestPersonalAccount:
 
     def test_logout (self, driver_creation_login_quit):
         driver=driver_creation_login_quit
-        driver.find_element(By.XPATH, '//*[contains(text(), "Личный Кабинет")]/parent::a').click()
+        driver.find_element(*locs.main_personal_account_link).click()
         
-        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Выход")]')))
-        driver.find_element(By.XPATH, '//button[contains(text(), "Выход")]').click()
-        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//button[contains(text(),"Войти")]')))
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located((locs.pa_quit_button)))
+        driver.find_element(*locs.pa_quit_button).click()
+        WebDriverWait(driver, 10).until(expected_conditions.visibility_of_element_located((locs.login_login_button)))
         
         assert (urls.url_part_login_form in driver.current_url)
 
