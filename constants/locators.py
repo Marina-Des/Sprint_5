@@ -61,11 +61,4 @@ reg_incorrect_password_message = [By.XPATH, '//*[contains(text(),"Некорре
 
 
 
-        # WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[contains(text(),"Профиль")]')))
-        
-        # WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//p[contains(text(), "Конструктор")]//..//..//a'))) 
-
-        # WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, '//div[starts-with(@class, "AppHeader_header__logo")]//a')))
-
-
 

@@ -1,14 +1,9 @@
 import constants.urls as urls
 import constants.locators as locs
 import pytest
-import time
-import re
 import random
 import string
 
-
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -16,16 +11,14 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 class TestRegistrationChrome:
 
-# тут должны упасть 2 теста - на пустом вводе пароля и на вводе адреса эл.почты с доменом первого уровня в виде числа
-
 # Во всех тестах предполагаю, что в случае успешной регистрации приложение переводит на страницу .../login
+
 
 
     def generate_correct_email(self):
         return 'usver'+ str(int(random.random()*10000))+'@abvgd.edu'
 
 
-    # этот код повторяется во всех тестах, но я не смогла загнать его в фикстуру, а потом применить. Надо больше времени и гугла
     def fill_name_email_password_click_register(self, driver, name, email, password):
         driver.find_element(*locs.reg_name_input).send_keys(name)
         driver.find_element(*locs.reg_email_input).send_keys(email)
@@ -33,15 +26,11 @@ class TestRegistrationChrome:
         driver.find_element(*locs.reg_register_button).click()
 
 
-    def wait_for_loading_main_presence(self, driver):
-        WebDriverWait(driver, 5).until(expected_conditions.presence_of_element_located(locs.common_main_block))
-
-
     # -----------------------------------------------------
 
 
-
     # Проверь успешную регистрацию. 
+
     def test_reg_successful_with_right_name_email_password(self, driver_creation_quit):
         driver = driver_creation_quit
         driver.get(urls.url_main_page+urls.url_part_registration_page)
@@ -59,7 +48,7 @@ class TestRegistrationChrome:
 
     #Проверяем значения количества символов на границах и внутри. 
     @pytest.mark.parametrize ('password,is_correct_password', [
-        ['', False], 
+        ['', False],   # здесь тест упадет, потому что сообщение при пустом поле не появляется
         ['1', False], 
         ['123', False],
         ['12345', False], 
